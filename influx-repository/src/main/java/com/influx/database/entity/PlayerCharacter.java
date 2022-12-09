@@ -1,9 +1,9 @@
 package com.influx.database.entity;
 
 
+import com.influx.database.entity.enums.PlayerOnlineStatus;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
 import javax.persistence.*;
 
@@ -22,4 +22,7 @@ public class PlayerCharacter {
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "battle_attributes_id")
     private BattleAttributes battleAttributes;
+
+    @Enumerated(EnumType.STRING)
+    private PlayerOnlineStatus playerOnlineStatus;
 }

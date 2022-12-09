@@ -1,4 +1,4 @@
-package com.influx.engine.entity.enums;
+package com.influx.database.entity.enums;
 
 public enum PlayerOnlineStatus {
 
