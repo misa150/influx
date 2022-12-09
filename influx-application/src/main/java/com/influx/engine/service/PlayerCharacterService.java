@@ -1,0 +1,46 @@
+package com.influx.engine.service;
+
+import com.influx.engine.dto.AddPlayerCharacterDTO;
+import com.influx.engine.dto.PlayerCharacterDTO;
+import com.influx.engine.entity.BattleAttributes;
+import com.influx.engine.entity.PlayerCharacter;
+import com.influx.engine.entity.enums.PlayerHealthStatus;
+import com.influx.engine.entity.enums.PlayerOnlineStatus;
+import com.influx.engine.repository.PlayerCharacterRepository;
+import com.influx.engine.util.mapper.PlayerCharacterMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class PlayerCharacterService {
+
+    private final PlayerCharacterRepository playerCharacterRepository;
+
+    public PlayerCharacterDTO saveNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
+        var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayer));
+        return PlayerCharacterMapper.map(savedPlayer);
+    }
+
+    private PlayerCharacter initializeNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
+        return PlayerCharacter
+                .builder()
+                .playerName(addNewPlayer.getPlayerName())
+                .battleAttributes(BattleAttributes
+                        .builder()
+                        .attackPower(1)
+                        .experience(0L)
+                        .baseLevel(1)
+                        .mana(BigDecimal.valueOf(10))
+                        .hitPoints(BigDecimal.valueOf(50))
+                        .moveSpeed(2)
+                        .playerHealthStatus(PlayerHealthStatus.ALIVE)
+                        .build())
+                .playerOnlineStatus(PlayerOnlineStatus.OFFLINE)
+                .build();
+    }
+}
