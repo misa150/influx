@@ -11,6 +11,7 @@ public final class PlayerCharacterMapper {
                 .playerName(playerCharacter.getPlayerName())
                 .battleAttributes(BattleAttributesMapper.map(playerCharacter.getBattleAttributes()))
                 .playerOnlineStatus(playerCharacter.getPlayerOnlineStatus())
+                .creationDate(playerCharacter.getCreationDate())
                 .build();
     }
 
