@@ -14,8 +14,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static com.influx.engine.util.literals.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
 
@@ -36,6 +38,14 @@ public class PlayerCharacterService {
             var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayer));
             return PlayerCharacterMapper.map(savedPlayer);
         }
+    }
+
+    public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName (String playerName) {
+        var playerCharacter = playerCharacterRepository.findByPlayerName(playerName).orElse(null);
+        if (playerCharacter != null) {
+            return Optional.of(PlayerCharacterMapper.map(playerCharacter));
+        }
+        return Optional.empty();
     }
 
     private PlayerCharacter initializeNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
