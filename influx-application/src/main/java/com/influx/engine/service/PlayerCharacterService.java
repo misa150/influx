@@ -2,11 +2,11 @@ package com.influx.engine.service;
 
 import com.influx.engine.dto.AddPlayerCharacterDTO;
 import com.influx.engine.dto.PlayerCharacterDTO;
-import com.influx.engine.entity.BattleAttributes;
-import com.influx.engine.entity.PlayerCharacter;
-import com.influx.engine.entity.enums.PlayerHealthStatus;
-import com.influx.engine.entity.enums.PlayerOnlineStatus;
-import com.influx.engine.repository.PlayerCharacterRepository;
+import com.influx.database.entity.BattleAttributes;
+import com.influx.database.entity.PlayerCharacter;
+import com.influx.database.entity.enums.PlayerHealthStatus;
+import com.influx.database.entity.enums.PlayerOnlineStatus;
+import com.influx.database.repository.PlayerCharacterRepository;
 import com.influx.engine.util.mapper.PlayerCharacterMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

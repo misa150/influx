@@ -1,6 +1,6 @@
 package com.influx.engine.dto;
 
-import com.influx.engine.entity.enums.PlayerHealthStatus;
+import com.influx.database.entity.enums.PlayerHealthStatus;
 import lombok.Builder;
 import lombok.Data;
 

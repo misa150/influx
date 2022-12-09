@@ -4,7 +4,6 @@ package com.influx.database.entity;
 import com.influx.database.entity.enums.PlayerHealthStatus;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
