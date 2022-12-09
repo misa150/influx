@@ -14,9 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static com.influx.engine.util.literals.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
@@ -29,26 +29,38 @@ public class PlayerCharacterService {
     private final PlayerCharacterRepository playerCharacterRepository;
     private final LogsService logsService;
 
-    public PlayerCharacterDTO saveNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
-        if (playerCharacterRepository.findByPlayerName(addNewPlayer.getPlayerName()).isPresent()) {
-            var errorMessage = String.format(ADD_PLAYER_EXISTING_ERROR, addNewPlayer.getPlayerName());
+    public PlayerCharacterDTO saveNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayerCharacter) {
+        if (playerCharacterRepository.findByPlayerName(addNewPlayerCharacter.getPlayerName()).isPresent()) {
+            var errorMessage = String.format(ADD_PLAYER_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());
             saveErrorLog(errorMessage);
             throw new PlayerCharacterException(errorMessage);
         } else {
-            var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayer));
+            var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayerCharacter));
             return PlayerCharacterMapper.map(savedPlayer);
         }
     }
 
-    public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName (String playerName) {
-        var playerCharacter = playerCharacterRepository.findByPlayerName(playerName).orElse(null);
+    public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName(String playerCharacterName) {
+        var playerCharacter = playerCharacterRepository.findByPlayerName(playerCharacterName).orElse(null);
         if (playerCharacter != null) {
             return Optional.of(PlayerCharacterMapper.map(playerCharacter));
         }
         return Optional.empty();
     }
 
-    private PlayerCharacter initializeNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
+    public List<PlayerCharacterDTO> findAllPlayerCharacters() {
+        return playerCharacterRepository.findAll().stream()
+                .map(playerCharacter -> PlayerCharacterMapper.map(playerCharacter))
+                .toList();
+    }
+
+    public void deletePlayerCharacterByName(String playerCharacterName) {
+        playerCharacterRepository.findByPlayerName(playerCharacterName)
+                .ifPresent(playerCharacter -> playerCharacterRepository.delete(playerCharacter));
+
+    }
+
+    private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
         return PlayerCharacter
                 .builder()
                 .playerName(addNewPlayer.getPlayerName())

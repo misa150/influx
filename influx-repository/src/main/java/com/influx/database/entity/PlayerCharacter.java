@@ -25,7 +25,7 @@ public class PlayerCharacter {
     @Column(nullable = false)
     private String playerName;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "battle_attributes_id")
     private BattleAttributes battleAttributes;
 
