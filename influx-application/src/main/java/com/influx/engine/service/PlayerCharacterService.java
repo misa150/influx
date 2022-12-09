@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -22,8 +23,12 @@ public class PlayerCharacterService {
     private final PlayerCharacterRepository playerCharacterRepository;
 
     public PlayerCharacterDTO saveNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
-        var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayer));
-        return PlayerCharacterMapper.map(savedPlayer);
+        if (playerCharacterRepository.findByPlayerName(addNewPlayer.getPlayerName()).isPresent()) {
+            throw new RuntimeException("Player is already existing");
+        } else {
+            var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayer));
+            return PlayerCharacterMapper.map(savedPlayer);
+        }
     }
 
     private PlayerCharacter initializeNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
@@ -41,6 +46,7 @@ public class PlayerCharacterService {
                         .playerHealthStatus(PlayerHealthStatus.ALIVE)
                         .build())
                 .playerOnlineStatus(PlayerOnlineStatus.OFFLINE)
+                .creationDate(LocalDateTime.now())
                 .build();
     }
 }

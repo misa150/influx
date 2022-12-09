@@ -2,8 +2,10 @@ package com.influx.database.entity;
 
 
 import com.influx.database.entity.enums.PlayerHealthStatus;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -12,6 +14,8 @@ import java.math.BigDecimal;
 @Builder
 @Entity
 @Table(name = "battle_attributes", schema = "world")
+@NoArgsConstructor
+@AllArgsConstructor
 public class BattleAttributes {
 
     @Id
