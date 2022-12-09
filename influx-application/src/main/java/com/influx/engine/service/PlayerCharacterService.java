@@ -7,6 +7,7 @@ import com.influx.database.entity.PlayerCharacter;
 import com.influx.database.entity.enums.PlayerHealthStatus;
 import com.influx.database.entity.enums.PlayerOnlineStatus;
 import com.influx.database.repository.PlayerCharacterRepository;
+import com.influx.engine.exceptions.PlayerCharacterException;
 import com.influx.engine.service.logs.LogsService;
 import com.influx.engine.util.mapper.PlayerCharacterMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,9 @@ public class PlayerCharacterService {
 
     public PlayerCharacterDTO saveNewPlayerCharacter (AddPlayerCharacterDTO addNewPlayer) {
         if (playerCharacterRepository.findByPlayerName(addNewPlayer.getPlayerName()).isPresent()) {
-            saveErrorLog(ADD_PLAYER_EXISTING_ERROR);
-            throw new RuntimeException(ADD_PLAYER_EXISTING_ERROR);
+            var errorMessage = String.format(ADD_PLAYER_EXISTING_ERROR, addNewPlayer.getPlayerName());
+            saveErrorLog(errorMessage);
+            throw new PlayerCharacterException(errorMessage);
         } else {
             var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayer));
             return PlayerCharacterMapper.map(savedPlayer);
