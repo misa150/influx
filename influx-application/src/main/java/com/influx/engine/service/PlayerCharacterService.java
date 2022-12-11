@@ -1,7 +1,7 @@
 package com.influx.engine.service;
 
-import com.influx.engine.dto.AddPlayerCharacterDTO;
-import com.influx.engine.dto.PlayerCharacterDTO;
+import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
+import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
 import com.influx.database.entity.BattleAttributes;
 import com.influx.database.entity.PlayerCharacter;
 import com.influx.database.entity.enums.PlayerHealthStatus;
@@ -29,6 +29,7 @@ public class PlayerCharacterService {
 
     private final PlayerCharacterRepository playerCharacterRepository;
     private final LogsService logsService;
+    private final BattleAttributeService battleAttributeService;
 
     //TODO: IF PRESENT OR ELSE
     public PlayerCharacterDTO saveNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayerCharacter) {
@@ -71,6 +72,7 @@ public class PlayerCharacterService {
         if (playerCharacterFromDb.isPresent()) {
             var playerCharacter = playerCharacterFromDb.get();
             updatePlayerCharacter(playerCharacter, addNewPlayerCharacter);
+            battleAttributeService.updateBattleAttributes(playerCharacter, addNewPlayerCharacter);
             return mapPlayerCharacter(playerCharacterRepository.save(playerCharacter));
         } else {
             var errorMessage = String.format(UPDATE_PLAYER_NOT_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());

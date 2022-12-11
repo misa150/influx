@@ -1,4 +1,4 @@
-package com.influx.engine.dto;
+package com.influx.engine.dto.addplayer;
 
 
 import lombok.Getter;
@@ -10,4 +10,5 @@ public class AddPlayerCharacterDTO {
 
     private String playerName;
     private String playerDisplayName;
+    private UpdateBattleAttributesDTO battleAttributes;
 }
