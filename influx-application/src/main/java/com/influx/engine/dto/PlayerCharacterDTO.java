@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 public class PlayerCharacterDTO {
 
     private String playerName;
+    private String playerDisplayName;
     private BattleAttributesDTO battleAttributes;
     private PlayerOnlineStatus playerOnlineStatus;
     private LocalDateTime creationDate;
+    private LocalDateTime lastUpdatedDate;
 }

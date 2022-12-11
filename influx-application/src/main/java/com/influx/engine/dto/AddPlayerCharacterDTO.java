@@ -9,4 +9,5 @@ import lombok.Setter;
 public class AddPlayerCharacterDTO {
 
     private String playerName;
+    private String playerDisplayName;
 }
