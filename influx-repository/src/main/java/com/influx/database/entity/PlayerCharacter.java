@@ -38,4 +38,7 @@ public class PlayerCharacter {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime creationDate;
+
+    @Column(nullable = false)
+    private LocalDateTime lastUpdatedDate;
 }

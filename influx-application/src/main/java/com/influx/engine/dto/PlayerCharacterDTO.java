@@ -15,4 +15,5 @@ public class PlayerCharacterDTO {
     private BattleAttributesDTO battleAttributes;
     private PlayerOnlineStatus playerOnlineStatus;
     private LocalDateTime creationDate;
+    private LocalDateTime lastUpdatedDate;
 }

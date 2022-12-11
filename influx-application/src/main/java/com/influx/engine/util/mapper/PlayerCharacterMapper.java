@@ -13,6 +13,7 @@ public final class PlayerCharacterMapper {
                 .battleAttributes(BattleAttributesMapper.map(playerCharacter.getBattleAttributes()))
                 .playerOnlineStatus(playerCharacter.getPlayerOnlineStatus())
                 .creationDate(playerCharacter.getCreationDate())
+                .lastUpdatedDate(playerCharacter.getLastUpdatedDate())
                 .build();
     }
 

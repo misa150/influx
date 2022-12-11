@@ -85,9 +85,11 @@ public class PlayerCharacterService {
 
     private void updatePlayerCharacter(PlayerCharacter existingPlayer, AddPlayerCharacterDTO updatePlayer) {
         existingPlayer.setPlayerDisplayName(updatePlayer.getPlayerDisplayName());
+        existingPlayer.setLastUpdatedDate(LocalDateTime.now());
     }
 
     private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
+        var dateNow = LocalDateTime.now();
         return PlayerCharacter
                 .builder()
                 .playerName(addNewPlayer.getPlayerName())
@@ -103,7 +105,8 @@ public class PlayerCharacterService {
                         .playerHealthStatus(PlayerHealthStatus.ALIVE)
                         .build())
                 .playerOnlineStatus(PlayerOnlineStatus.OFFLINE)
-                .creationDate(LocalDateTime.now())
+                .creationDate(dateNow)
+                .lastUpdatedDate(dateNow)
                 .build();
     }
 
