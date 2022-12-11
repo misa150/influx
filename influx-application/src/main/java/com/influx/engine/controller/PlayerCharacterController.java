@@ -42,9 +42,17 @@ public class PlayerCharacterController {
     }
 
     @DeleteMapping(value = {"/delete-player-character/{playerCharacterName}"})
-    public ResponseEntity<Void> deletePlayerCharacterByName(
+    public ResponseEntity<Void> deletePlayerCharacterByCharacterName(
             @PathVariable("playerCharacterName") String playerCharacterName) {
         playerCharacterService.deletePlayerCharacterByName(playerCharacterName);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(value = {"/update-player-character/{playerCharacterName}"},
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PlayerCharacterDTO> updatePlayerCharacter(@RequestBody AddPlayerCharacterDTO addNewPlayer,
+            @PathVariable("playerCharacterName") String playerCharacterName) {
+        return ResponseEntity.ok(playerCharacterService.updatePlayerCharacter(addNewPlayer, playerCharacterName));
     }
 }

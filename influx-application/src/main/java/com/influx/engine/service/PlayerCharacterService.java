@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.influx.engine.util.literals.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
+import static com.influx.engine.util.literals.ErrorLiterals.UPDATE_PLAYER_NOT_EXISTING_ERROR;
 
 @Slf4j
 @Service
@@ -29,6 +30,7 @@ public class PlayerCharacterService {
     private final PlayerCharacterRepository playerCharacterRepository;
     private final LogsService logsService;
 
+    //TODO: IF PRESENT OR ELSE
     public PlayerCharacterDTO saveNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayerCharacter) {
         if (playerCharacterRepository.findByPlayerName(addNewPlayerCharacter.getPlayerName()).isPresent()) {
             var errorMessage = String.format(ADD_PLAYER_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());
@@ -36,34 +38,60 @@ public class PlayerCharacterService {
             throw new PlayerCharacterException(errorMessage);
         } else {
             var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayerCharacter));
-            return PlayerCharacterMapper.map(savedPlayer);
+            return mapPlayerCharacter(savedPlayer);
         }
     }
 
+    //TODO: IF PRESENT OR ELSE
     public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName(String playerCharacterName) {
         var playerCharacter = playerCharacterRepository.findByPlayerName(playerCharacterName).orElse(null);
         if (playerCharacter != null) {
-            return Optional.of(PlayerCharacterMapper.map(playerCharacter));
+            return Optional.of(mapPlayerCharacter(playerCharacter));
         }
         return Optional.empty();
     }
 
+    //TODO: PAGEABLE
     public List<PlayerCharacterDTO> findAllPlayerCharacters() {
         return playerCharacterRepository.findAll().stream()
-                .map(playerCharacter -> PlayerCharacterMapper.map(playerCharacter))
+                .map(playerCharacter -> mapPlayerCharacter(playerCharacter))
                 .toList();
     }
 
+    //TODO: IF PRESENT OR ELSE
     public void deletePlayerCharacterByName(String playerCharacterName) {
         playerCharacterRepository.findByPlayerName(playerCharacterName)
                 .ifPresent(playerCharacter -> playerCharacterRepository.delete(playerCharacter));
+    }
 
+    //TODO: IF PRESENT OR ELSE
+    public PlayerCharacterDTO updatePlayerCharacter(
+            AddPlayerCharacterDTO addNewPlayerCharacter, String playerCharacterName) {
+        var playerCharacterFromDb = playerCharacterRepository.findByPlayerName(playerCharacterName);
+        if (playerCharacterFromDb.isPresent()) {
+            var playerCharacter = playerCharacterFromDb.get();
+            updatePlayerCharacter(playerCharacter, addNewPlayerCharacter);
+            return mapPlayerCharacter(playerCharacterRepository.save(playerCharacter));
+        } else {
+            var errorMessage = String.format(UPDATE_PLAYER_NOT_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());
+            saveErrorLog(errorMessage);
+            throw new PlayerCharacterException(errorMessage);
+        }
+    }
+
+    private PlayerCharacterDTO mapPlayerCharacter(PlayerCharacter playerCharacter) {
+        return PlayerCharacterMapper.map(playerCharacter);
+    }
+
+    private void updatePlayerCharacter(PlayerCharacter existingPlayer, AddPlayerCharacterDTO updatePlayer) {
+        existingPlayer.setPlayerDisplayName(updatePlayer.getPlayerDisplayName());
     }
 
     private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
         return PlayerCharacter
                 .builder()
                 .playerName(addNewPlayer.getPlayerName())
+                .playerDisplayName(addNewPlayer.getPlayerDisplayName())
                 .battleAttributes(BattleAttributes
                         .builder()
                         .attackPower(1)
