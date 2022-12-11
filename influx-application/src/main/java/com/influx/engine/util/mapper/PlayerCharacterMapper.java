@@ -2,7 +2,7 @@ package com.influx.engine.util.mapper;
 
 
 import com.influx.database.entity.PlayerCharacter;
-import com.influx.engine.dto.PlayerCharacterDTO;
+import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
 
 public final class PlayerCharacterMapper {
 

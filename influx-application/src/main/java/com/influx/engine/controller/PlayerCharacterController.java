@@ -1,7 +1,7 @@
 package com.influx.engine.controller;
 
-import com.influx.engine.dto.AddPlayerCharacterDTO;
-import com.influx.engine.dto.PlayerCharacterDTO;
+import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
+import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
 import com.influx.engine.service.PlayerCharacterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

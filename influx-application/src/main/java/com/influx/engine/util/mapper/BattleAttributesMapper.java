@@ -2,7 +2,7 @@ package com.influx.engine.util.mapper;
 
 
 import com.influx.database.entity.BattleAttributes;
-import com.influx.engine.dto.BattleAttributesDTO;
+import com.influx.engine.dto.playercharacter.BattleAttributesDTO;
 
 public final class BattleAttributesMapper {
 
