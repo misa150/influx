@@ -2,8 +2,6 @@ package com.influx.engine.service;
 
 import com.influx.database.entity.BattleAttributes;
 import com.influx.database.entity.PlayerCharacter;
-import com.influx.database.entity.enums.PlayerHealthStatus;
-import com.influx.database.entity.enums.PlayerOnlineStatus;
 import com.influx.database.repository.PlayerCharacterRepository;
 import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
 import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
@@ -19,8 +17,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.influx.engine.util.literals.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
-import static com.influx.engine.util.literals.ErrorLiterals.UPDATE_PLAYER_NOT_EXISTING_ERROR;
+import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.*;
+import static com.influx.engine.util.literals.logs.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
+import static com.influx.engine.util.literals.logs.ErrorLiterals.UPDATE_PLAYER_NOT_EXISTING_ERROR;
 
 @Slf4j
 @Service
@@ -88,6 +87,7 @@ public class PlayerCharacterService {
         existingPlayer.setLastUpdatedDate(LocalDateTime.now());
     }
 
+    //TODO: SET HP and Other values to be from AddPlayerCharacterDTO
     private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
         var dateNow = LocalDateTime.now();
         return PlayerCharacter
@@ -96,15 +96,15 @@ public class PlayerCharacterService {
                 .playerDisplayName(addNewPlayer.getPlayerDisplayName())
                 .battleAttributes(BattleAttributes
                         .builder()
-                        .attackPower(1)
-                        .experience(0L)
-                        .baseLevel(1)
-                        .mana(BigDecimal.valueOf(10))
-                        .hitPoints(BigDecimal.valueOf(50))
-                        .moveSpeed(2)
-                        .playerHealthStatus(PlayerHealthStatus.ALIVE)
+                        .hitPoints(addNewPlayer.getBattleAttributes().getHitPoints())
+                        .mana(addNewPlayer.getBattleAttributes().getMana())
+                        .experience(BASE_EXP)
+                        .baseLevel(BASE_LEVEL)
+                        .attackPower(addNewPlayer.getBattleAttributes().getAttackPower())
+                        .moveSpeed(addNewPlayer.getBattleAttributes().getMoveSpeed())
+                        .playerHealthStatus(INITIAL_PLAYER_HEALTH_STATUS)
                         .build())
-                .playerOnlineStatus(PlayerOnlineStatus.OFFLINE)
+                .playerOnlineStatus(INITIAL_PLAYER_ONLINE_STATUS)
                 .creationDate(dateNow)
                 .lastUpdatedDate(dateNow)
                 .build();

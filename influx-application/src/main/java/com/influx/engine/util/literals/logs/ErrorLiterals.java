@@ -1,4 +1,4 @@
-package com.influx.engine.util.literals;
+package com.influx.engine.util.literals.logs;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
