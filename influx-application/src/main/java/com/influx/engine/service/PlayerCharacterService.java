@@ -1,12 +1,12 @@
 package com.influx.engine.service;
 
-import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
-import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
 import com.influx.database.entity.BattleAttributes;
 import com.influx.database.entity.PlayerCharacter;
 import com.influx.database.entity.enums.PlayerHealthStatus;
 import com.influx.database.entity.enums.PlayerOnlineStatus;
 import com.influx.database.repository.PlayerCharacterRepository;
+import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
+import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
 import com.influx.engine.exceptions.PlayerCharacterException;
 import com.influx.engine.service.logs.LogsService;
 import com.influx.engine.util.mapper.PlayerCharacterMapper;
@@ -46,23 +46,21 @@ public class PlayerCharacterService {
     //TODO: IF PRESENT OR ELSE
     public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName(String playerCharacterName) {
         var playerCharacter = playerCharacterRepository.findByPlayerName(playerCharacterName).orElse(null);
-        if (playerCharacter != null) {
-            return Optional.of(mapPlayerCharacter(playerCharacter));
-        }
-        return Optional.empty();
+        return playerCharacter != null ?  Optional.of(mapPlayerCharacter(playerCharacter)) :  Optional.empty();
     }
 
     //TODO: PAGEABLE
     public List<PlayerCharacterDTO> findAllPlayerCharacters() {
         return playerCharacterRepository.findAll().stream()
-                .map(playerCharacter -> mapPlayerCharacter(playerCharacter))
+                .map(this::mapPlayerCharacter)
                 .toList();
     }
 
-    //TODO: IF PRESENT OR ELSE
+    //TODO: IF PRESENT OR ELSE:: IMPROVE, RETURN ERROR IF CHARACTER IS NOT EXISTING?
+    //TODO: CREATE UNIT TEST
     public void deletePlayerCharacterByName(String playerCharacterName) {
         playerCharacterRepository.findByPlayerName(playerCharacterName)
-                .ifPresent(playerCharacter -> playerCharacterRepository.delete(playerCharacter));
+                .ifPresent(playerCharacterRepository::delete);
     }
 
     //TODO: IF PRESENT OR ELSE
