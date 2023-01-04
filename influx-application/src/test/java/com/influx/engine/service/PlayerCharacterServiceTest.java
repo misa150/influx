@@ -49,7 +49,6 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
 
         assertNotNull(response);
         assertEquals(PLAYER_CHARACTER_NAME, response.getPlayerName());
-        //TODO: Check value of initialization
 
         verify(playerCharacterRepository).findByPlayerName(PLAYER_CHARACTER_NAME);
         verify(playerCharacterRepository).save(any(PlayerCharacter.class));
@@ -60,12 +59,13 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
 
     @Test
     void saveNewPlayerCharacterPlayerIsExistingShouldThrowError() {
+        var playerCharacterDto = createAddPlayerCharacterDTO();
         String errorMessage = "Unable to save new player with name player_character_name. Player Name is already existing";
         when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
                 .thenReturn(Optional.of(createPlayerCharacter()));
 
         final PlayerCharacterException exception = assertThrows(PlayerCharacterException.class,
-                ()-> cut.saveNewPlayerCharacter(createAddPlayerCharacterDTO()));
+                ()-> cut.saveNewPlayerCharacter(playerCharacterDto));
 
         assertEquals(errorMessage, exception.getMessage());
 
@@ -138,12 +138,13 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
 
     @Test
     void updatePlayerCharacterShouldNotExistingShouldThrowError() {
+        var playerCharacterDto = createAddPlayerCharacterDTO();
         String errorMessage = "Player with name player_character_name is not existing";
         when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
                 .thenReturn(Optional.empty());
 
         final PlayerCharacterException exception = assertThrows(PlayerCharacterException.class,
-                ()-> cut.updatePlayerCharacter(createAddPlayerCharacterDTO(), PLAYER_CHARACTER_NAME));
+                ()-> cut.updatePlayerCharacter(playerCharacterDto, PLAYER_CHARACTER_NAME));
 
         assertEquals(errorMessage, exception.getMessage());
 
