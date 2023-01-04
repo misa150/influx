@@ -1,6 +1,5 @@
 package com.influx.engine.service;
 
-import com.influx.database.entity.BattleAttributes;
 import com.influx.database.entity.PlayerCharacter;
 import com.influx.database.repository.PlayerCharacterRepository;
 import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
@@ -12,14 +11,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.*;
 import static com.influx.engine.util.literals.logs.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
-import static com.influx.engine.util.literals.logs.ErrorLiterals.UPDATE_PLAYER_NOT_EXISTING_ERROR;
+import static com.influx.engine.util.literals.logs.ErrorLiterals.PLAYER_NOT_EXISTING_ERROR;
 
 @Slf4j
 @Service
@@ -42,10 +40,10 @@ public class PlayerCharacterService {
         }
     }
 
-    //TODO: IF PRESENT OR ELSE
     public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName(String playerCharacterName) {
-        var playerCharacter = playerCharacterRepository.findByPlayerName(playerCharacterName).orElse(null);
-        return playerCharacter != null ?  Optional.of(mapPlayerCharacter(playerCharacter)) :  Optional.empty();
+        return playerCharacterRepository.findByPlayerName(playerCharacterName)
+                .map(playerCharacter -> Optional.of(mapPlayerCharacter(playerCharacter)))
+                .orElse(Optional.empty());
     }
 
     //TODO: PAGEABLE
@@ -55,11 +53,11 @@ public class PlayerCharacterService {
                 .toList();
     }
 
-    //TODO: IF PRESENT OR ELSE:: IMPROVE, RETURN ERROR IF CHARACTER IS NOT EXISTING?
-    //TODO: CREATE UNIT TEST
     public void deletePlayerCharacterByName(String playerCharacterName) {
-        playerCharacterRepository.findByPlayerName(playerCharacterName)
-                .ifPresent(playerCharacterRepository::delete);
+        playerCharacterRepository.findByPlayerName(playerCharacterName).ifPresentOrElse(
+                this::deletePlayer,
+                () -> deletePlayerNotExisting(playerCharacterName)
+        );
     }
 
     //TODO: IF PRESENT OR ELSE
@@ -72,10 +70,20 @@ public class PlayerCharacterService {
             battleAttributeService.updateBattleAttributes(playerCharacter, addNewPlayerCharacter);
             return mapPlayerCharacter(playerCharacterRepository.save(playerCharacter));
         } else {
-            var errorMessage = String.format(UPDATE_PLAYER_NOT_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());
+            var errorMessage = String.format(PLAYER_NOT_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());
             saveErrorLog(errorMessage);
             throw new PlayerCharacterException(errorMessage);
         }
+    }
+
+    private void deletePlayer(PlayerCharacter playerCharacter) {
+        playerCharacterRepository.delete(playerCharacter);
+    }
+
+    private void deletePlayerNotExisting(String playerCharacterName) {
+        var errorMessage = String.format(PLAYER_NOT_EXISTING_ERROR, playerCharacterName);
+        saveErrorLog(errorMessage);
+        throw new PlayerCharacterException(errorMessage);
     }
 
     private PlayerCharacterDTO mapPlayerCharacter(PlayerCharacter playerCharacter) {
@@ -87,23 +95,13 @@ public class PlayerCharacterService {
         existingPlayer.setLastUpdatedDate(LocalDateTime.now());
     }
 
-    //TODO: SET HP and Other values to be from AddPlayerCharacterDTO
     private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
         var dateNow = LocalDateTime.now();
         return PlayerCharacter
                 .builder()
                 .playerName(addNewPlayer.getPlayerName())
                 .playerDisplayName(addNewPlayer.getPlayerDisplayName())
-                .battleAttributes(BattleAttributes
-                        .builder()
-                        .hitPoints(addNewPlayer.getBattleAttributes().getHitPoints())
-                        .mana(addNewPlayer.getBattleAttributes().getMana())
-                        .experience(BASE_EXP)
-                        .baseLevel(BASE_LEVEL)
-                        .attackPower(addNewPlayer.getBattleAttributes().getAttackPower())
-                        .moveSpeed(addNewPlayer.getBattleAttributes().getMoveSpeed())
-                        .playerHealthStatus(INITIAL_PLAYER_HEALTH_STATUS)
-                        .build())
+                .battleAttributes(battleAttributeService.initializeBattleAttributes(addNewPlayer))
                 .playerOnlineStatus(INITIAL_PLAYER_ONLINE_STATUS)
                 .creationDate(dateNow)
                 .lastUpdatedDate(dateNow)

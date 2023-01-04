@@ -20,7 +20,7 @@ public class PlayerCharacterLiterals {
     protected static final LocalDateTime CREATION_DATE = CURRENT_TIME;
     protected static final LocalDateTime LAST_UPDATED_DATE = CURRENT_TIME.plusDays(1);
 
-    protected static final Integer BASE_LEVEL = 2;
+    protected static final Integer LEVEL = 2;
     protected static final Long EXP = 1L;
 
     protected static final BigDecimal HIT_POINTS = BigDecimal.valueOf(10);

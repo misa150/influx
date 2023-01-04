@@ -4,6 +4,7 @@ import com.influx.database.entity.BattleAttributes;
 import com.influx.database.entity.PlayerCharacter;
 import com.influx.database.repository.PlayerCharacterRepository;
 import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
+import com.influx.engine.dto.addplayer.UpdateBattleAttributesDTO;
 import com.influx.engine.exceptions.PlayerCharacterException;
 import com.influx.engine.service.logs.LogsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,9 +19,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
+
+    private static final String PLAYER_NOT_EXISTING_LOG = "Player with name player_character_name is not existing";
 
     private PlayerCharacterService cut;
 
@@ -40,20 +44,23 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
 
     @Test
     void saveNewPlayerCharacterShouldReturnOk() {
+        var addPlayerCharacter = createAddPlayerCharacterDTO();
         when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
                 .thenReturn(Optional.empty());
         when(playerCharacterRepository.save(any(PlayerCharacter.class))).thenReturn(createPlayerCharacter());
 
         var response =
-                cut.saveNewPlayerCharacter(createAddPlayerCharacterDTO());
+                cut.saveNewPlayerCharacter(addPlayerCharacter);
 
         assertNotNull(response);
         assertEquals(PLAYER_CHARACTER_NAME, response.getPlayerName());
 
         verify(playerCharacterRepository).findByPlayerName(PLAYER_CHARACTER_NAME);
         verify(playerCharacterRepository).save(any(PlayerCharacter.class));
+        verify(battleAttributeService).initializeBattleAttributes(addPlayerCharacter);
 
         verifyNoMoreInteractions(playerCharacterRepository);
+        verifyNoMoreInteractions(battleAttributeService);
         verifyNoInteractions(logsService);
     }
 
@@ -73,6 +80,7 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
         verify(logsService).saveNewErrorLog(errorMessage);
 
         verifyNoMoreInteractions(playerCharacterRepository);
+        verifyNoInteractions(battleAttributeService);
     }
 
     @Test
@@ -139,7 +147,7 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
     @Test
     void updatePlayerCharacterShouldNotExistingShouldThrowError() {
         var playerCharacterDto = createAddPlayerCharacterDTO();
-        String errorMessage = "Player with name player_character_name is not existing";
+        String errorMessage = PLAYER_NOT_EXISTING_LOG;
         when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
                 .thenReturn(Optional.empty());
 
@@ -154,10 +162,55 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
         verifyNoMoreInteractions(playerCharacterRepository);
     }
 
+    @Test
+    void deletePlayerCharacterByNamePlayerExisting() {
+        var playerCharacter = createPlayerCharacter();
+
+        when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
+                .thenReturn(Optional.of(playerCharacter));
+
+        cut.deletePlayerCharacterByName(PLAYER_CHARACTER_NAME);
+
+        verify(playerCharacterRepository).findByPlayerName(PLAYER_CHARACTER_NAME);
+        verify(playerCharacterRepository).delete(playerCharacter);
+
+        verifyNoInteractions(logsService);
+        verifyNoMoreInteractions(playerCharacterRepository);
+    }
+
+    @Test
+    void deletePlayerCharacterByNamePlayerNotExistingShouldThrowError() {
+        String errorMessage = PLAYER_NOT_EXISTING_LOG;
+        when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
+                .thenReturn(Optional.empty());
+
+        final PlayerCharacterException exception = assertThrows(PlayerCharacterException.class,
+                ()-> cut.deletePlayerCharacterByName(PLAYER_CHARACTER_NAME));
+
+        assertEquals(errorMessage, exception.getMessage());
+
+        verify(playerCharacterRepository).findByPlayerName(PLAYER_CHARACTER_NAME);
+        verify(logsService).saveNewErrorLog(errorMessage);
+
+        verifyNoMoreInteractions(playerCharacterRepository);
+    }
+
     private AddPlayerCharacterDTO createAddPlayerCharacterDTO() {
+        var battleAttributes = new UpdateBattleAttributesDTO();
+
+        battleAttributes.setBaseLevel(LEVEL);
+        battleAttributes.setExperience(EXP);
+        battleAttributes.setHitPoints(HIT_POINTS);
+        battleAttributes.setMana(MANA);
+        battleAttributes.setAttackPower(ATTACK_POWER);
+        battleAttributes.setMoveSpeed(MOVE_SPEED);
+
         var addPlayerCharacter = new AddPlayerCharacterDTO();
+
         addPlayerCharacter.setPlayerName(PLAYER_CHARACTER_NAME);
         addPlayerCharacter.setPlayerDisplayName(PLAYER_CHARACTER_DISPLAY_NAME);
+        addPlayerCharacter.setBattleAttributes(battleAttributes);
+
         return addPlayerCharacter;
     }
 
@@ -165,9 +218,20 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
         return PlayerCharacter
                 .builder()
                 .playerName(PLAYER_CHARACTER_NAME)
-                .battleAttributes(BattleAttributes
-                        .builder()
-                        .build())
+                .battleAttributes(createBattleAttribute())
+                .build();
+    }
+
+    private BattleAttributes createBattleAttribute() {
+        return BattleAttributes
+                .builder()
+                .baseLevel(LEVEL)
+                .experience(EXP)
+                .hitPoints(HIT_POINTS)
+                .mana(MANA)
+                .attackPower(ATTACK_POWER)
+                .moveSpeed(MOVE_SPEED)
+                .playerHealthStatus(PLAYER_HEALTH_STATUS)
                 .build();
     }
 }
