@@ -44,7 +44,7 @@ class PlayerCharacterMapperTest extends PlayerCharacterLiterals {
     private BattleAttributes createBattleAttributes() {
         return BattleAttributes
                 .builder()
-                .baseLevel(BASE_LEVEL)
+                .baseLevel(LEVEL)
                 .experience(EXP)
                 .hitPoints(HIT_POINTS)
                 .mana(MANA)

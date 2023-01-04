@@ -13,5 +13,7 @@ public class BaseValuesLiterals {
     public static final PlayerHealthStatus INITIAL_PLAYER_HEALTH_STATUS = PlayerHealthStatus.ALIVE;
     public static final PlayerOnlineStatus INITIAL_PLAYER_ONLINE_STATUS =  PlayerOnlineStatus.OFFLINE;
 
+    public static final String FIND_ALL_SORT = "playerName";
+
 
 }

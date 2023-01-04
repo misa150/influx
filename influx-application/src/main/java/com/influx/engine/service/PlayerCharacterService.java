@@ -1,6 +1,5 @@
 package com.influx.engine.service;
 
-import com.influx.database.entity.BattleAttributes;
 import com.influx.database.entity.PlayerCharacter;
 import com.influx.database.repository.PlayerCharacterRepository;
 import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
@@ -10,16 +9,17 @@ import com.influx.engine.service.logs.LogsService;
 import com.influx.engine.util.mapper.PlayerCharacterMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.*;
-import static com.influx.engine.util.literals.logs.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
-import static com.influx.engine.util.literals.logs.ErrorLiterals.UPDATE_PLAYER_NOT_EXISTING_ERROR;
+import static com.influx.engine.util.literals.logs.ErrorLiterals.*;
 
 @Slf4j
 @Service
@@ -30,52 +30,61 @@ public class PlayerCharacterService {
     private final LogsService logsService;
     private final BattleAttributeService battleAttributeService;
 
-    //TODO: IF PRESENT OR ELSE
     public PlayerCharacterDTO saveNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayerCharacter) {
-        if (playerCharacterRepository.findByPlayerName(addNewPlayerCharacter.getPlayerName()).isPresent()) {
-            var errorMessage = String.format(ADD_PLAYER_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());
-            saveErrorLog(errorMessage);
-            throw new PlayerCharacterException(errorMessage);
-        } else {
-            var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayerCharacter));
-            return mapPlayerCharacter(savedPlayer);
-        }
+        return (PlayerCharacterDTO) playerCharacterRepository.findByPlayerName(addNewPlayerCharacter.getPlayerName())
+                .map(playerCharacter -> {
+                    throw new PlayerCharacterException(
+                        String.format(ADD_PLAYER_EXISTING_ERROR, playerCharacter.getPlayerName()), logsService);})
+                .orElse(savePlayerCharacter(addNewPlayerCharacter));
     }
 
-    //TODO: IF PRESENT OR ELSE
+    private PlayerCharacterDTO savePlayerCharacter(AddPlayerCharacterDTO addNewPlayerCharacter) {
+        var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayerCharacter));
+        return mapPlayerCharacter(savedPlayer);
+    }
+
     public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName(String playerCharacterName) {
-        var playerCharacter = playerCharacterRepository.findByPlayerName(playerCharacterName).orElse(null);
-        return playerCharacter != null ?  Optional.of(mapPlayerCharacter(playerCharacter)) :  Optional.empty();
+        return playerCharacterRepository.findByPlayerName(playerCharacterName)
+                .map(playerCharacter -> Optional.of(mapPlayerCharacter(playerCharacter)))
+                .orElse(Optional.empty());
     }
 
-    //TODO: PAGEABLE
-    public List<PlayerCharacterDTO> findAllPlayerCharacters() {
-        return playerCharacterRepository.findAll().stream()
+    public List<PlayerCharacterDTO> findAllPlayerCharacters(Integer limit, Integer offset) {
+        Pageable pageable = PageRequest.of(offset, limit, Sort.by(Sort.Direction.ASC, FIND_ALL_SORT));
+
+        return playerCharacterRepository.findAll(pageable)
+                .stream()
                 .map(this::mapPlayerCharacter)
                 .toList();
     }
 
-    //TODO: IF PRESENT OR ELSE:: IMPROVE, RETURN ERROR IF CHARACTER IS NOT EXISTING?
-    //TODO: CREATE UNIT TEST
     public void deletePlayerCharacterByName(String playerCharacterName) {
-        playerCharacterRepository.findByPlayerName(playerCharacterName)
-                .ifPresent(playerCharacterRepository::delete);
+        playerCharacterRepository.findByPlayerName(playerCharacterName).ifPresentOrElse(
+                this::deletePlayer,
+                () -> {
+                    throw new PlayerCharacterException(
+                        String.format(DELETE_PLAYER_NOT_EXISTING_ERROR, playerCharacterName), logsService);
+                }
+        );
     }
 
-    //TODO: IF PRESENT OR ELSE
     public PlayerCharacterDTO updatePlayerCharacter(
             AddPlayerCharacterDTO addNewPlayerCharacter, String playerCharacterName) {
-        var playerCharacterFromDb = playerCharacterRepository.findByPlayerName(playerCharacterName);
-        if (playerCharacterFromDb.isPresent()) {
-            var playerCharacter = playerCharacterFromDb.get();
-            updatePlayerCharacter(playerCharacter, addNewPlayerCharacter);
-            battleAttributeService.updateBattleAttributes(playerCharacter, addNewPlayerCharacter);
-            return mapPlayerCharacter(playerCharacterRepository.save(playerCharacter));
-        } else {
-            var errorMessage = String.format(UPDATE_PLAYER_NOT_EXISTING_ERROR, addNewPlayerCharacter.getPlayerName());
-            saveErrorLog(errorMessage);
-            throw new PlayerCharacterException(errorMessage);
-        }
+        return playerCharacterRepository.findByPlayerName(playerCharacterName)
+                .map(playerCharacter -> updateExistingPlayerCharacter(addNewPlayerCharacter, playerCharacter))
+                .orElseThrow(() -> new PlayerCharacterException(
+                        String.format(UPDATE_PLAYER_NOT_EXISTING_ERROR, playerCharacterName), logsService));
+    }
+
+    private PlayerCharacterDTO updateExistingPlayerCharacter(
+            AddPlayerCharacterDTO addNewPlayerCharacter, PlayerCharacter playerCharacter) {
+        updatePlayerCharacter(playerCharacter, addNewPlayerCharacter);
+        battleAttributeService.updateBattleAttributes(playerCharacter, addNewPlayerCharacter);
+        return mapPlayerCharacter(playerCharacterRepository.save(playerCharacter));
+    }
+
+    private void deletePlayer(PlayerCharacter playerCharacter) {
+        playerCharacterRepository.delete(playerCharacter);
     }
 
     private PlayerCharacterDTO mapPlayerCharacter(PlayerCharacter playerCharacter) {
@@ -87,30 +96,16 @@ public class PlayerCharacterService {
         existingPlayer.setLastUpdatedDate(LocalDateTime.now());
     }
 
-    //TODO: SET HP and Other values to be from AddPlayerCharacterDTO
     private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
         var dateNow = LocalDateTime.now();
         return PlayerCharacter
                 .builder()
                 .playerName(addNewPlayer.getPlayerName())
                 .playerDisplayName(addNewPlayer.getPlayerDisplayName())
-                .battleAttributes(BattleAttributes
-                        .builder()
-                        .hitPoints(addNewPlayer.getBattleAttributes().getHitPoints())
-                        .mana(addNewPlayer.getBattleAttributes().getMana())
-                        .experience(BASE_EXP)
-                        .baseLevel(BASE_LEVEL)
-                        .attackPower(addNewPlayer.getBattleAttributes().getAttackPower())
-                        .moveSpeed(addNewPlayer.getBattleAttributes().getMoveSpeed())
-                        .playerHealthStatus(INITIAL_PLAYER_HEALTH_STATUS)
-                        .build())
+                .battleAttributes(battleAttributeService.initializeBattleAttributes(addNewPlayer))
                 .playerOnlineStatus(INITIAL_PLAYER_ONLINE_STATUS)
                 .creationDate(dateNow)
                 .lastUpdatedDate(dateNow)
                 .build();
-    }
-
-    private void saveErrorLog(String errorMessage) {
-        logsService.saveNewErrorLog(errorMessage);
     }
 }

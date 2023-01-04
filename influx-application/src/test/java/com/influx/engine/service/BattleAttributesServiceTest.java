@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BattleAttributesServiceTest extends PlayerCharacterLiterals {
@@ -27,7 +28,7 @@ class BattleAttributesServiceTest extends PlayerCharacterLiterals {
         cut.updateBattleAttributes(playerCharacter, createAddPlayerCharacterDTO());
 
         var battleAttributes = playerCharacter.getBattleAttributes();
-        assertEquals(BASE_LEVEL, battleAttributes.getBaseLevel());
+        assertEquals(LEVEL, battleAttributes.getBaseLevel());
         assertEquals(EXP, battleAttributes.getExperience());
         assertEquals(HIT_POINTS, battleAttributes.getHitPoints());
         assertEquals(MANA, battleAttributes.getMana());
@@ -35,10 +36,23 @@ class BattleAttributesServiceTest extends PlayerCharacterLiterals {
         assertEquals(MOVE_SPEED, battleAttributes.getMoveSpeed());
     }
 
+    @Test
+    void initializeBattleAttributesShouldHaveCorrectValues() {
+        var response = cut.initializeBattleAttributes(createAddPlayerCharacterDTO());
+
+        assertEquals(BASE_LEVEL, response.getBaseLevel());
+        assertEquals(BASE_EXP, response.getExperience());
+        assertEquals(HIT_POINTS, response.getHitPoints());
+        assertEquals(MANA, response.getMana());
+        assertEquals(ATTACK_POWER, response.getAttackPower());
+        assertEquals(MOVE_SPEED, response.getMoveSpeed());
+        assertEquals(PLAYER_HEALTH_STATUS.ALIVE, INITIAL_PLAYER_HEALTH_STATUS);
+    }
+
     private AddPlayerCharacterDTO createAddPlayerCharacterDTO() {
         var battleAttributes = new UpdateBattleAttributesDTO();
 
-        battleAttributes.setBaseLevel(BASE_LEVEL);
+        battleAttributes.setBaseLevel(LEVEL);
         battleAttributes.setExperience(EXP);
         battleAttributes.setHitPoints(HIT_POINTS);
         battleAttributes.setMana(MANA);

@@ -68,11 +68,11 @@ class PlayerCharacterControllerTest extends PlayerCharacterLiterals {
 
     @Test
     void findAllPlayerCharactersShouldFindPlayers() {
-        when(playerCharacterService.findAllPlayerCharacters())
+        when(playerCharacterService.findAllPlayerCharacters(PAGEABLE_LIMIT, PAGEABLE_OFFSET))
                 .thenReturn(Arrays.asList(
                         createPlayerCharacterDTO(), createPlayerCharacterDTO()));
 
-        var response = cut.findAllPlayerCharacters();
+        var response = cut.findAllPlayerCharacters(PAGEABLE_LIMIT, PAGEABLE_OFFSET);
 
         basicResponseCheck(response, HttpStatus.OK);
         assertEquals(2, response.getBody().size());
@@ -80,10 +80,10 @@ class PlayerCharacterControllerTest extends PlayerCharacterLiterals {
 
     @Test
     void findAllPlayerCharactersShouldFindNoPlayers() {
-        when(playerCharacterService.findAllPlayerCharacters())
+        when(playerCharacterService.findAllPlayerCharacters(PAGEABLE_LIMIT, PAGEABLE_OFFSET))
                 .thenReturn(new ArrayList<>());
 
-        var response = cut.findAllPlayerCharacters();
+        var response = cut.findAllPlayerCharacters(PAGEABLE_LIMIT, PAGEABLE_OFFSET);
 
         basicResponseCheck(response, HttpStatus.OK);
         assertEquals(0, response.getBody().size());
