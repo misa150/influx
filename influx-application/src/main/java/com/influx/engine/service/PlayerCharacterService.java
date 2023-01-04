@@ -38,11 +38,6 @@ public class PlayerCharacterService {
                 .orElse(savePlayerCharacter(addNewPlayerCharacter));
     }
 
-    private PlayerCharacterDTO savePlayerCharacter(AddPlayerCharacterDTO addNewPlayerCharacter) {
-        var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayerCharacter));
-        return mapPlayerCharacter(savedPlayer);
-    }
-
     public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName(String playerCharacterName) {
         return playerCharacterRepository.findByPlayerName(playerCharacterName)
                 .map(playerCharacter -> Optional.of(mapPlayerCharacter(playerCharacter)))
@@ -50,7 +45,7 @@ public class PlayerCharacterService {
     }
 
     public List<PlayerCharacterDTO> findAllPlayerCharacters(Integer limit, Integer offset) {
-        Pageable pageable = PageRequest.of(offset, limit, Sort.by(Sort.Direction.ASC, FIND_ALL_SORT));
+        Pageable pageable = PageRequest.of(offset, limit, Sort.by(Sort.Direction.ASC, FIND_ALL_PLAYERS_SORT_VARIABLE));
 
         return playerCharacterRepository.findAll(pageable)
                 .stream()
@@ -76,10 +71,14 @@ public class PlayerCharacterService {
                         String.format(UPDATE_PLAYER_NOT_EXISTING_ERROR, playerCharacterName), logsService));
     }
 
+    private PlayerCharacterDTO savePlayerCharacter(AddPlayerCharacterDTO addNewPlayerCharacter) {
+        var savedPlayer = playerCharacterRepository.save(initializeNewPlayerCharacter(addNewPlayerCharacter));
+        return mapPlayerCharacter(savedPlayer);
+    }
+
     private PlayerCharacterDTO updateExistingPlayerCharacter(
             AddPlayerCharacterDTO addNewPlayerCharacter, PlayerCharacter playerCharacter) {
         updatePlayerCharacter(playerCharacter, addNewPlayerCharacter);
-        battleAttributeService.updateBattleAttributes(playerCharacter, addNewPlayerCharacter);
         return mapPlayerCharacter(playerCharacterRepository.save(playerCharacter));
     }
 
@@ -94,6 +93,8 @@ public class PlayerCharacterService {
     private void updatePlayerCharacter(PlayerCharacter existingPlayer, AddPlayerCharacterDTO updatePlayer) {
         existingPlayer.setPlayerDisplayName(updatePlayer.getPlayerDisplayName());
         existingPlayer.setLastUpdatedDate(LocalDateTime.now());
+
+        battleAttributeService.updateBattleAttributes(existingPlayer, updatePlayer);
     }
 
     private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
