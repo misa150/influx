@@ -9,6 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -37,8 +40,10 @@ public class PlayerCharacterController {
     }
 
     @GetMapping(value = {"/find-all-player-character"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<PlayerCharacterDTO>> findAllPlayerCharacters() {
-        return ResponseEntity.ok().body(playerCharacterService.findAllPlayerCharacters());
+    public ResponseEntity<List<PlayerCharacterDTO>> findAllPlayerCharacters(
+            @RequestParam(value = "limit", required = false, defaultValue = "10") @Min(1L) @Max(200L) @Valid Integer limit,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") @Min(1L) @Max(200L) @Valid Integer offset) {
+        return ResponseEntity.ok().body(playerCharacterService.findAllPlayerCharacters(limit, offset));
     }
 
     @DeleteMapping(value = {"/delete-player-character/{playerCharacterName}"})

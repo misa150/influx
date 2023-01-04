@@ -9,6 +9,9 @@ import com.influx.engine.service.logs.LogsService;
 import com.influx.engine.util.mapper.PlayerCharacterMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -46,9 +49,11 @@ public class PlayerCharacterService {
                 .orElse(Optional.empty());
     }
 
-    //TODO: PAGEABLE
-    public List<PlayerCharacterDTO> findAllPlayerCharacters() {
-        return playerCharacterRepository.findAll().stream()
+    public List<PlayerCharacterDTO> findAllPlayerCharacters(Integer limit, Integer offset) {
+        Pageable pageable = PageRequest.of(offset, limit, Sort.by(Sort.Direction.ASC, FIND_ALL_SORT));
+
+        return playerCharacterRepository.findAll(pageable)
+                .stream()
                 .map(this::mapPlayerCharacter)
                 .toList();
     }

@@ -31,5 +31,8 @@ public class PlayerCharacterLiterals {
 
     protected static final PlayerHealthStatus PLAYER_HEALTH_STATUS = PlayerHealthStatus.ALIVE;
 
+    protected static final Integer PAGEABLE_LIMIT = 10;
+    protected static final Integer PAGEABLE_OFFSET = 0;
+
 
 }

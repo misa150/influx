@@ -12,10 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.Arrays;
 import java.util.Optional;
 
+import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.FIND_ALL_SORT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -113,13 +117,16 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
     @Test
     void findAllPlayerCharactersShouldReturnOk() {
         var playerCharacter = createPlayerCharacter();
-        when(playerCharacterRepository.findAll()).thenReturn(Arrays.asList(playerCharacter, playerCharacter));
+        var pageable = PageRequest.of(
+                PAGEABLE_OFFSET, PAGEABLE_LIMIT, Sort.by(Sort.Direction.ASC, FIND_ALL_SORT));
+        when(playerCharacterRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(Arrays.asList(playerCharacter, playerCharacter)));
 
-        var response = cut.findAllPlayerCharacters();
+        var response = cut.findAllPlayerCharacters(PAGEABLE_LIMIT, PAGEABLE_OFFSET);
 
         assertEquals(2, response.size());
 
-        verify(playerCharacterRepository).findAll();
+        verify(playerCharacterRepository).findAll(pageable);
 
         verifyNoMoreInteractions(playerCharacterRepository);
     }
