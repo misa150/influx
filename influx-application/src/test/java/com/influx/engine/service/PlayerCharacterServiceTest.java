@@ -24,8 +24,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 @ExtendWith(MockitoExtension.class)
 class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
 
-    private static final String PLAYER_NOT_EXISTING_LOG = "Player with name player_character_name is not existing";
-
     private PlayerCharacterService cut;
 
     @Mock
@@ -147,7 +145,7 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
     @Test
     void updatePlayerCharacterShouldNotExistingShouldThrowError() {
         var playerCharacterDto = createAddPlayerCharacterDTO();
-        String errorMessage = PLAYER_NOT_EXISTING_LOG;
+        String errorMessage = "Unable to update player with name player_character_name. Player is not existing";
         when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
                 .thenReturn(Optional.empty());
 
@@ -180,7 +178,7 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
 
     @Test
     void deletePlayerCharacterByNamePlayerNotExistingShouldThrowError() {
-        String errorMessage = PLAYER_NOT_EXISTING_LOG;
+        String errorMessage = "Unable to delete player with name player_character_name. Player is not existing";
         when(playerCharacterRepository.findByPlayerName(PLAYER_CHARACTER_NAME))
                 .thenReturn(Optional.empty());
 
