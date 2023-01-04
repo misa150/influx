@@ -11,16 +11,10 @@ import java.math.BigDecimal;
 public class BattleAttributesDTO {
 
     private Long experience;
-
     private BigDecimal hitPoints;
-
     private BigDecimal mana;
-
     private Integer moveSpeed;
-
     private Integer attackPower;
-
     private Integer baseLevel;
-
     private PlayerHealthStatus playerHealthStatus;
 }

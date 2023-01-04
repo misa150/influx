@@ -1,8 +1,5 @@
 package com.influx.engine.dto.addplayer;
 
-import com.influx.database.entity.enums.PlayerHealthStatus;
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

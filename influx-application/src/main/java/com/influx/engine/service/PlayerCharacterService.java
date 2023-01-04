@@ -1,12 +1,10 @@
 package com.influx.engine.service;
 
-import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
-import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
 import com.influx.database.entity.BattleAttributes;
 import com.influx.database.entity.PlayerCharacter;
-import com.influx.database.entity.enums.PlayerHealthStatus;
-import com.influx.database.entity.enums.PlayerOnlineStatus;
 import com.influx.database.repository.PlayerCharacterRepository;
+import com.influx.engine.dto.addplayer.AddPlayerCharacterDTO;
+import com.influx.engine.dto.playercharacter.PlayerCharacterDTO;
 import com.influx.engine.exceptions.PlayerCharacterException;
 import com.influx.engine.service.logs.LogsService;
 import com.influx.engine.util.mapper.PlayerCharacterMapper;
@@ -19,8 +17,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.influx.engine.util.literals.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
-import static com.influx.engine.util.literals.ErrorLiterals.UPDATE_PLAYER_NOT_EXISTING_ERROR;
+import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.*;
+import static com.influx.engine.util.literals.logs.ErrorLiterals.ADD_PLAYER_EXISTING_ERROR;
+import static com.influx.engine.util.literals.logs.ErrorLiterals.UPDATE_PLAYER_NOT_EXISTING_ERROR;
 
 @Slf4j
 @Service
@@ -46,23 +45,21 @@ public class PlayerCharacterService {
     //TODO: IF PRESENT OR ELSE
     public Optional<PlayerCharacterDTO> findPlayerCharacterByPlayerName(String playerCharacterName) {
         var playerCharacter = playerCharacterRepository.findByPlayerName(playerCharacterName).orElse(null);
-        if (playerCharacter != null) {
-            return Optional.of(mapPlayerCharacter(playerCharacter));
-        }
-        return Optional.empty();
+        return playerCharacter != null ?  Optional.of(mapPlayerCharacter(playerCharacter)) :  Optional.empty();
     }
 
     //TODO: PAGEABLE
     public List<PlayerCharacterDTO> findAllPlayerCharacters() {
         return playerCharacterRepository.findAll().stream()
-                .map(playerCharacter -> mapPlayerCharacter(playerCharacter))
+                .map(this::mapPlayerCharacter)
                 .toList();
     }
 
-    //TODO: IF PRESENT OR ELSE
+    //TODO: IF PRESENT OR ELSE:: IMPROVE, RETURN ERROR IF CHARACTER IS NOT EXISTING?
+    //TODO: CREATE UNIT TEST
     public void deletePlayerCharacterByName(String playerCharacterName) {
         playerCharacterRepository.findByPlayerName(playerCharacterName)
-                .ifPresent(playerCharacter -> playerCharacterRepository.delete(playerCharacter));
+                .ifPresent(playerCharacterRepository::delete);
     }
 
     //TODO: IF PRESENT OR ELSE
@@ -90,6 +87,7 @@ public class PlayerCharacterService {
         existingPlayer.setLastUpdatedDate(LocalDateTime.now());
     }
 
+    //TODO: SET HP and Other values to be from AddPlayerCharacterDTO
     private PlayerCharacter initializeNewPlayerCharacter(AddPlayerCharacterDTO addNewPlayer) {
         var dateNow = LocalDateTime.now();
         return PlayerCharacter
@@ -98,15 +96,15 @@ public class PlayerCharacterService {
                 .playerDisplayName(addNewPlayer.getPlayerDisplayName())
                 .battleAttributes(BattleAttributes
                         .builder()
-                        .attackPower(1)
-                        .experience(0L)
-                        .baseLevel(1)
-                        .mana(BigDecimal.valueOf(10))
-                        .hitPoints(BigDecimal.valueOf(50))
-                        .moveSpeed(2)
-                        .playerHealthStatus(PlayerHealthStatus.ALIVE)
+                        .hitPoints(addNewPlayer.getBattleAttributes().getHitPoints())
+                        .mana(addNewPlayer.getBattleAttributes().getMana())
+                        .experience(BASE_EXP)
+                        .baseLevel(BASE_LEVEL)
+                        .attackPower(addNewPlayer.getBattleAttributes().getAttackPower())
+                        .moveSpeed(addNewPlayer.getBattleAttributes().getMoveSpeed())
+                        .playerHealthStatus(INITIAL_PLAYER_HEALTH_STATUS)
                         .build())
-                .playerOnlineStatus(PlayerOnlineStatus.OFFLINE)
+                .playerOnlineStatus(INITIAL_PLAYER_ONLINE_STATUS)
                 .creationDate(dateNow)
                 .lastUpdatedDate(dateNow)
                 .build();

@@ -6,6 +6,8 @@ import com.influx.engine.dto.playercharacter.BattleAttributesDTO;
 
 public final class BattleAttributesMapper {
 
+    private BattleAttributesMapper () {}
+
     public static BattleAttributesDTO map(BattleAttributes battleAttributes) {
         return BattleAttributesDTO.builder()
                 .attackPower(battleAttributes.getAttackPower())
