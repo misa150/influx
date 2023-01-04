@@ -19,7 +19,7 @@ import org.springframework.data.domain.Sort;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.FIND_ALL_SORT;
+import static com.influx.engine.util.literals.basevalues.BaseValuesLiterals.FIND_ALL_PLAYERS_SORT_VARIABLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -118,7 +118,7 @@ class PlayerCharacterServiceTest extends PlayerCharacterLiterals {
     void findAllPlayerCharactersShouldReturnOk() {
         var playerCharacter = createPlayerCharacter();
         var pageable = PageRequest.of(
-                PAGEABLE_OFFSET, PAGEABLE_LIMIT, Sort.by(Sort.Direction.ASC, FIND_ALL_SORT));
+                PAGEABLE_OFFSET, PAGEABLE_LIMIT, Sort.by(Sort.Direction.ASC, FIND_ALL_PLAYERS_SORT_VARIABLE));
         when(playerCharacterRepository.findAll(pageable))
                 .thenReturn(new PageImpl<>(Arrays.asList(playerCharacter, playerCharacter)));
 
